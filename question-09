@@ -1,15 +1,20 @@
-class Account:
-    def _init_(self):
-        self.__balance = 0
-    def deposit(self, amt):
-        self.__balance += amt
-    def withdraw(self, amt):
-        if amt <= self.__balance:
-            self.__balance -= amt
-    def get_balance(self):
-        return self.__balance
+from abc import ABC, abstractmethod
+class Payment(ABC):
+    @abstractmethod
+    def pay(self, amount):
+        pass
 
-a = Account()
-a.deposit(5000)
-a.withdraw(1500)
-print(a.get_balance())
+class UPI(Payment):
+    def pay(self, amount):
+        return "UPI Paid " + str(amount)
+
+class Card(Payment):
+    def pay(self, amount):
+        return "Card Paid " + str(amount)
+
+class Wallet(Payment):
+    def pay(self, amount):
+        return "Wallet Paid " + str(amount)
+
+for p in [UPI(), Card(), Wallet()]:
+    print(p.pay(500))
