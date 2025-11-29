@@ -1,47 +1,37 @@
-import os
-import sys
-FNAME="covid_records.txt"
-def append_record(name,age,gender,vaccine,date):
-    with open(FNAME,"a",encoding="utf-8") as f:
-        f.write(f"{name}|{age}|{gender}|{vaccine}|{date}\n")
-def read_records():
-    if not os.path.exists(FNAME):
-        return []
-    with open(FNAME,"r",encoding="utf-8") as f:
-        lines=[l.strip() for l in f if l.strip()]
-    records=[l.split("|") for l in lines]
-    return records
-def display(records):
-    cols=["Name","Age","Gender","Vaccine","Date"]
-    widths=[20,5,8,15,12]
-    header="".join(c.ljust(w) for c,w in zip(cols,widths))
-    print(header)
-    print("-"*sum(widths))
-    for r in records:
-        row=[(r[i] if i<len(r) else "").ljust(w) for i,w in enumerate(widths)]
-        print("".join(row))
+import re
+def extract_all(text):
+    patterns={
+        "Indian Mobile":r"\b[6-9]\d{9}\b",
+        "PAN":r"\b[A-Z]{5}[0-9]{4}[A-Z]\b",
+        "Aadhaar":r"\b\d{12}\b",
+        "Postal PIN":r"\b[1-9][0-9]{5}\b",
+        "URL":r"\b(?:https?://)?(?:www\.)?[A-Za-z0-9\-_]+\.[A-Za-z]{2,}(?:/[^\s]*)?\b",
+        "IPv4":r"\b(?:(?:25[0-5]|2[0-4]\d|1?\d{1,2})\.){3}(?:25[0-5]|2[0-4]\d|1?\d{1,2})\b",
+        "Strong Password":r"\b(?=.{8,})(?=.[a-z])(?=.[A-Z])(?=.\d)(?=.[^A-Za-z0-9]).*\b"
+    }
+    results={}
+    for k,p in patterns.items():
+        results[k]=re.findall(p,text)
+    return results
 def main():
-    try:
-        while True:
-            print("1 Add 2 View 3 Exit")
-            c=input("Choice: ").strip()
-            if c=="1":
-                name=input("Name: ").strip()
-                age=input("Age: ").strip()
-                gender=input("Gender: ").strip()
-                vaccine=input("Vaccine: ").strip()
-                date=input("Date (YYYY-MM-DD): ").strip()
-                append_record(name,age,gender,vaccine,date)
-                print("Record appended.")
-            elif c=="2":
-                rec=read_records()
-                display(rec)
-            elif c=="3":
-                break
-            else:
-                print("Invalid choice")
-    except Exception as e:
-        print("Error:",e)
-        sys.exit(1)
+    print("Paste text (end with a blank line):")
+    lines=[]
+    while True:
+        try:
+            l=input()
+        except EOFError:
+            break
+        if l=="":
+            break
+        lines.append(l)
+    text="\n".join(lines)
+    out=extract_all(text)
+    for k,v in out.items():
+        print(f"{k}:")
+        if v:
+            for item in sorted(set(v), key=lambda x:text.find(x)):
+                print(" ",item)
+        else:
+            print("  None found")
 if _name=="main_":
     main()
